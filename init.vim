@@ -13,8 +13,9 @@ Plug 'preservim/nerdcommenter'
 
 " neo
 Plug 'github/copilot.vim'
-Plug 'nvim-treesitter/nvim-treesitter'
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 Plug 'mbbill/undotree'
+Plug 'kassio/neoterm'
 
 " Colours
 Plug 'catppuccin/nvim', { 'as': 'catppuccin' }

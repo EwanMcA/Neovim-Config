@@ -1,5 +1,6 @@
 
 vim.keymap.set("n", "<leader>ev", ":e ~/.config/nvim/init.vim<CR>")
+vim.keymap.set("n", "<leader>cs", ":e ~/.config/nvim/README.md<CR>")
 vim.keymap.set("n", "<leader>sv", ":source ~/.config/nvim/init.vim<CR>")
 
 vim.keymap.set("n", "E", ":Ex<CR>")
@@ -65,3 +66,43 @@ vim.keymap.set("n", "<leader>p", "<cmd>FZF<CR>")
 -- Git
 vim.api.nvim_create_user_command( "GB", "Git blame", {})
 vim.keymap.set("n", "<leader><leader>g", "<cmd>GBrowse<CR>")
+
+-- Terminal
+-- vim.keymap.set("t", "<Esc>", "<C-\\><C-n>") CLASH WITH CHANGE TAB
+
+-- project commands
+local function testCurrentFile()
+  local path = vim.fn.expand("%:p")
+  local filename = vim.fn.expand("%:gs?/home/emcandrew/dev/\\w*/??")
+  local type = vim.fn.expand("%:e")
+  local cmd = "T echo 'No test runner found'"
+
+  if type == "py" then
+    if path:match("dev/cwa") then
+      cmd = "T cwa; docker compose run --rm cwa pytest " .. filename
+    elseif path:match("dev/cds") then
+      cmd = "T cds; docker compose run --rm cds pytest " .. filename
+    elseif path:match("dev/generative") then
+      cmd = "T gas; make docker/build/test; docker run -it --rm --network gas-test-network gas:test pytest -vv " .. filename
+    else
+      cmd = "T cat " .. path
+    end
+  end
+  if type == "js" or type == "ts" or type == "tsx" then
+    if path:match("dev/cwa") then
+      cmd = "T cd frontend; yarn test " .. filename
+    else
+      cmd = "T yarn test " .. filename
+    end
+  end
+
+  vim.api.nvim_command(cmd)
+  vim.api.nvim_command("Topen")
+end
+vim.keymap.set("n", "<F2>", testCurrentFile)
+
+vim.api.nvim_create_user_command("Pdb", function()
+    local input = 'import pdb; pdb.set_trace()'
+    vim.api.nvim_input('o' .. input .. '<ESC>>>==')
+  end
+, {})

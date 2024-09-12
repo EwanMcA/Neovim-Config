@@ -1,9 +1,18 @@
 local lsp_zero = require('lsp-zero')
 
 lsp_zero.on_attach(function(client, bufnr)
-  -- see :help lsp-zero-keybindings
-  -- to learn the available actions
-  lsp_zero.default_keymaps({buffer = bufnr})
+  local opts = {buffer = bufnr, remap = false}
+
+  vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, opts)
+  vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, opts)
+  vim.keymap.set("n", "<leader>vws", function() vim.lsp.buf.workspace_symbol() end, opts)
+  vim.keymap.set("n", "<leader>vd", function() vim.diagnostic.open_float() end, opts)
+  vim.keymap.set("n", "[d", function() vim.diagnostic.goto_next() end, opts)
+  vim.keymap.set("n", "]d", function() vim.diagnostic.goto_prev() end, opts)
+  vim.keymap.set("n", "<leader>vca", function() vim.lsp.buf.code_action() end, opts)
+  vim.keymap.set("n", "<leader>vrr", function() vim.lsp.buf.references() end, opts)
+  vim.keymap.set("n", "<leader>vrn", function() vim.lsp.buf.rename() end, opts)
+  vim.keymap.set("i", "<C-h>", function() vim.lsp.buf.signature_help() end, opts)
 end)
 
 require('mason').setup({})
@@ -25,7 +34,14 @@ require('mason-lspconfig').setup({
         })
     end,
     pyright = function()
-        require('lspconfig').pyright.setup({})
+      -- set python path to "/home/emcandrew/.cache/pypoetry/virtualenvs/generative-answer-service-JeCAInCG-py3.10/bin/python"
+        require('lspconfig').pyright.setup({
+          settings = {
+            python = {
+              pythonPath = "/home/emcandrew/.cache/pypoetry/virtualenvs/generative-answer-service-JeCAInCG-py3.10/bin/python",
+            },
+          },
+        })
     end,
     lua_ls = function()
       local lua_opts = lsp_zero.nvim_lua_ls()
@@ -68,3 +84,20 @@ cmp.setup({
   })
 })
 
+vim.api.nvim_create_autocmd("LspAttach", {
+    group = vim.api.nvim_create_augroup("local_config", {}),
+    callback = function(args)
+        local client = vim.lsp.get_client_by_id(args.data.client_id)
+        if client ~= nil and client.name == "pyright" then
+            client.notify("workspace/didChangeConfiguration",
+                {
+                  settings = {
+                      python = {
+                        pythonPath = "/home/emcandrew/.cache/pypoetry/virtualenvs/cds-Arj5r0Ku-py3.10/bin/python",
+                      },
+                    },
+                }
+            )
+        end
+    end,
+})
